@@ -128,9 +128,10 @@ class SoftmaxModel(Model):
       out: A tensor of shape (batch_size, n_classes)
     """
     ### YOUR CODE HERE
-    W = tf.Variable(tf.zeros((self.config.n_features, self.config.n_classes)), dtype=tf.float32, name="W")
-    b = tf.Variable(tf.zeros([self.config.n_classes]), name="b")
-    out = softmax(tf.matmul(input_data, W) + b)
+    with tf.name_scope('softmax_linear'):
+      W = tf.Variable(tf.zeros((self.config.n_features, self.config.n_classes)), dtype=tf.float32, name="W")
+      b = tf.Variable(tf.zeros([self.config.n_classes]), name="b")
+      out = softmax(tf.matmul(input_data, W) + b)
     ### END YOUR CODE
     return out
 
