@@ -54,7 +54,8 @@ class SoftmaxModel(Model):
     (Don't change the variable names)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    self.input_placeholder  = tf.placeholder(tf.float32, [None, self.config.n_features], name="input_placeholder")
+    self.labels_placeholder = tf.placeholder(tf.int32,   [None, self.config.n_classes],  name="labels_placeholder")
     ### END YOUR CODE
 
   def create_feed_dict(self, input_batch, label_batch):
@@ -79,7 +80,7 @@ class SoftmaxModel(Model):
       feed_dict: The feed dictionary mapping from placeholders to values.
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    feed_dict = {self.input_placeholder: input_batch, self.labels_placeholder: label_batch}
     ### END YOUR CODE
     return feed_dict
 
@@ -103,7 +104,7 @@ class SoftmaxModel(Model):
       train_op: The Op for training.
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    train_op = tf.train.GradientDescentOptimizer(self.config.lr).minimize(loss)
     ### END YOUR CODE
     return train_op
 
@@ -127,7 +128,9 @@ class SoftmaxModel(Model):
       out: A tensor of shape (batch_size, n_classes)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    W = tf.Variable(tf.zeros((self.config.n_features, self.config.n_classes)), dtype=tf.float32, name="W")
+    b = tf.Variable(tf.zeros([self.config.n_classes]), name="b")
+    out = softmax(tf.matmul(input_data, W) + b)
     ### END YOUR CODE
     return out
 
@@ -142,7 +145,7 @@ class SoftmaxModel(Model):
       loss: A 0-d tensor (scalar)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    loss = cross_entropy_loss(self.labels_placeholder, pred)
     ### END YOUR CODE
     return loss
 
@@ -164,7 +167,11 @@ class SoftmaxModel(Model):
         data_iterator(input_data, input_labels,
                       batch_size=self.config.batch_size,
                       label_size=self.config.n_classes)):
-
+      
+      # `input_batch` is of size (batch_size, n_features)
+      # `label_batch` is of size (batch_size, n_classes)
+      
+      
       # Fill a feed dictionary with the actual set of images and labels
       # for this particular training step.
       feed_dict = self.create_feed_dict(input_batch, label_batch)
@@ -225,7 +232,7 @@ def test_SoftmaxModel():
     sess = tf.Session()
   
     # Run the Op to initialize the variables.
-    init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
     sess.run(init)
   
     losses = model.fit(sess, model.input_data, model.input_labels)
