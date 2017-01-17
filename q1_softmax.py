@@ -22,7 +22,9 @@ def softmax(x):
   """
 
   ### YOUR CODE HERE
-  raise NotImplementedError
+  x_norm = x - tf.reduce_max(x, axis=1, keep_dims=True)
+  exp = tf.exp(x_norm)
+  out = tf.div(exp, tf.reduce_sum(exp, axis=1))
   ### END YOUR CODE
   
   return out 
