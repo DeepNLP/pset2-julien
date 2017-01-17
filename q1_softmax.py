@@ -52,7 +52,7 @@ def cross_entropy_loss(y, yhat):
           tensor in the problem.
   """
   ### YOUR CODE HERE
-  raise NotImplementedError
+  out = - tf.reduce_sum(tf.cast(y, tf.float32) * tf.log(yhat))
   ### END YOUR CODE
   return out
 
