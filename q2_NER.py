@@ -190,7 +190,7 @@ class NERModel(LanguageModel):
           U:  (hidden_size, label_size)
           b2: (label_size)
 
-    https://www.tensorflow.org/versions/r0.7/api_docs/python/framework.html#graph-collections
+    https://www.tensorflow.org/api_docs/python/framework/graph_collections
     Args:
       window: tf.Tensor of shape (-1, window_size*embed_size)
     Returns:
@@ -209,6 +209,8 @@ class NERModel(LanguageModel):
       b2 = tf.get_variable("b2", [self.config.label_size])
       output = tf.matmul(h, U) + b2
     
+    regularization_loss = self.config.l2 / 2 * (tf.reduce_sum(tf.square(W)) + tf.reduce_sum(tf.square(U)))
+    tf.add_to_collection("total_loss", regularization_loss)
     ### END YOUR CODE
     return output 
 
@@ -223,7 +225,8 @@ class NERModel(LanguageModel):
       loss: A 0-d tensor (scalar)
     """
     ### YOUR CODE HERE
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=y))  # todo: add regularization term.
+    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder, logits=y))
+    loss += tf.get_collection("total_loss")[-1]
     ### END YOUR CODE
     return loss
 
