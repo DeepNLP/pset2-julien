@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import math
 
 def xavier_weight_init():
   """
@@ -24,7 +25,8 @@ def xavier_weight_init():
       out: tf.Tensor of specified shape sampled from Xavier distribution.
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    eps = math.sqrt(6) / math.sqrt(sum(shape))
+    out = tf.random_uniform(shape, minval=-eps, maxval=eps)
     ### END YOUR CODE
     return out
   # Returns defined initializer function.
@@ -48,7 +50,7 @@ def test_initialization_basic():
 def test_initialization():
   """ 
   Use this space to test your Xavier initialization code by running:
-      python q1_initialization.py 
+      python q2_initialization.py 
   This function will not be called by the autograder, nor will
   your tests be graded.
   """
