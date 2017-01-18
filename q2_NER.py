@@ -22,7 +22,7 @@ class Config(object):
   batch_size = 64
   label_size = 5
   hidden_size = 100
-  max_epochs = 1
+  max_epochs = 24
   early_stopping = 2
   dropout = 0.9
   lr = 0.001
