@@ -207,10 +207,12 @@ class NERModel(LanguageModel):
     with tf.variable_scope("Softmax"):
       U = tf.get_variable("U", initializer=xavier_initializer([self.config.hidden_size, self.config.label_size]))
       b2 = tf.get_variable("b2", [self.config.label_size])
-      output = tf.matmul(h, U) + b2
+      output_bf_dropout = tf.matmul(h, U) + b2
     
     regularization_loss = self.config.l2 / 2 * (tf.reduce_sum(tf.square(W)) + tf.reduce_sum(tf.square(U)))
     tf.add_to_collection("total_loss", regularization_loss)
+    
+    output = tf.nn.dropout(output_bf_dropout, self.dropout_placeholder)
     ### END YOUR CODE
     return output 
 
