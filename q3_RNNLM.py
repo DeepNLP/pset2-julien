@@ -32,6 +32,9 @@ class Config(object):
   dropout = 0.9
   lr = 0.001
 
+
+
+
 class RNNLM_Model(LanguageModel):
 
   def load_data(self, debug=False):
@@ -53,6 +56,8 @@ class RNNLM_Model(LanguageModel):
       self.encoded_valid = self.encoded_valid[:num_debug]
       self.encoded_test = self.encoded_test[:num_debug]
 
+
+
   def add_placeholders(self):
     """Generate placeholder variables to represent the input tensors
 
@@ -66,7 +71,7 @@ class RNNLM_Model(LanguageModel):
     input_placeholder: Input placeholder tensor of shape
                        (None, num_steps), type tf.int32
     labels_placeholder: Labels placeholder tensor of shape
-                        (None, num_steps), type tf.float32
+                        (None, num_steps), type tf.int32
     dropout_placeholder: Dropout value placeholder (scalar),
                          type tf.float32
 
@@ -81,7 +86,9 @@ class RNNLM_Model(LanguageModel):
     ### YOUR CODE HERE
     raise NotImplementedError
     ### END YOUR CODE
-  
+
+
+
   def add_embedding(self):
     """Add embedding layer.
 
@@ -104,6 +111,8 @@ class RNNLM_Model(LanguageModel):
       raise NotImplementedError
       ### END YOUR CODE
       return inputs
+
+
 
   def add_projection(self, rnn_outputs):
     """Adds a projection layer.
@@ -129,6 +138,8 @@ class RNNLM_Model(LanguageModel):
     ### END YOUR CODE
     return outputs
 
+
+
   def add_loss_op(self, output):
     """Adds loss ops to the computational graph.
 
@@ -143,6 +154,8 @@ class RNNLM_Model(LanguageModel):
     raise NotImplementedError
     ### END YOUR CODE
     return loss
+
+
 
   def add_training_op(self, loss):
     """Sets up the training Ops.
@@ -251,17 +264,18 @@ class RNNLM_Model(LanguageModel):
     total_steps = sum(1 for x in ptb_iterator(data, config.batch_size, config.num_steps))
     total_loss = []
     state = self.initial_state.eval()
-    for step, (x, y) in enumerate(
-      ptb_iterator(data, config.batch_size, config.num_steps)):
+    for step, (x, y) in enumerate(ptb_iterator(data, config.batch_size, config.num_steps)):
       # We need to pass in the initial state and retrieve the final state to give
       # the RNN proper history
       feed = {self.input_placeholder: x,
               self.labels_placeholder: y,
               self.initial_state: state,
               self.dropout_placeholder: dp}
-      loss, state, _ = session.run(
-          [self.calculate_loss, self.final_state, train_op], feed_dict=feed)
+      
+      loss, state, _ = session.run([self.calculate_loss, self.final_state, train_op], feed_dict=feed)
+      
       total_loss.append(loss)
+      
       if verbose and step % verbose == 0:
           sys.stdout.write('\r{} / {} : pp = {}'.format(
               step, total_steps, np.exp(np.mean(total_loss))))
@@ -269,6 +283,9 @@ class RNNLM_Model(LanguageModel):
     if verbose:
       sys.stdout.write('\r')
     return np.exp(np.mean(total_loss))
+
+
+
 
 
 
@@ -313,9 +330,14 @@ def generate_text(session, model, config, starting_text='<eos>',
   output = [model.vocab.decode(word_idx) for word_idx in tokens]
   return output
 
+
 def generate_sentence(session, model, config, *args, **kwargs):
   """Convenice to generate a sentence from the model."""
   return generate_text(session, model, config, *args, stop_tokens=['<eos>'], **kwargs)
+
+
+
+
 
 def test_RNNLM():
   config = Config()
@@ -341,9 +363,7 @@ def test_RNNLM():
       print 'Epoch {}'.format(epoch)
       start = time.time()
       ###
-      train_pp = model.run_epoch(
-          session, model.encoded_train,
-          train_op=model.train_step)
+      train_pp = model.run_epoch(session, model.encoded_train, train_op=model.train_step)
       valid_pp = model.run_epoch(session, model.encoded_valid)
       print 'Training perplexity: {}'.format(train_pp)
       print 'Validation perplexity: {}'.format(valid_pp)
@@ -355,16 +375,15 @@ def test_RNNLM():
         break
       print 'Total time: {}'.format(time.time() - start)
       
-    saver.restore(session, 'ptb_rnnlm.weights')
-    test_pp = model.run_epoch(session, model.encoded_test)
-    print '=-=' * 5
-    print 'Test perplexity: {}'.format(test_pp)
-    print '=-=' * 5
-    starting_text = 'in palo alto'
-    while starting_text:
-      print ' '.join(generate_sentence(
-          session, gen_model, gen_config, starting_text=starting_text, temp=1.0))
-      starting_text = raw_input('> ')
+    # saver.restore(session, 'ptb_rnnlm.weights')
+    # test_pp = model.run_epoch(session, model.encoded_test)
+    # print '=-=' * 5
+    # print 'Test perplexity: {}'.format(test_pp)
+    # print '=-=' * 5
+    # starting_text = 'in palo alto'
+    # while starting_text:
+    #   print ' '.join(generate_sentence(session, gen_model, gen_config, starting_text=starting_text, temp=1.0))
+    #   starting_text = raw_input('> ')
 
 if __name__ == "__main__":
     test_RNNLM()
