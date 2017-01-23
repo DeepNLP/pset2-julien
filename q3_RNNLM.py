@@ -84,7 +84,9 @@ class RNNLM_Model(LanguageModel):
     (Don't change the variable names)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    self.input_placeholder   = tf.placeholder(tf.int32, [None, self.config.num_steps], name="input_placeholder")
+    self.labels_placeholder  = tf.placeholder(tf.int32, [None, self.config.num_steps], name="labels_placeholder")
+    self.dropout_placeholder = tf.placeholder(tf.float32, [], name="dropout_placeholder")
     ### END YOUR CODE
 
 
@@ -108,7 +110,9 @@ class RNNLM_Model(LanguageModel):
     # The embedding lookup is currently only implemented for the CPU
     with tf.device('/cpu:0'):
       ### YOUR CODE HERE
-      raise NotImplementedError
+      self.L = tf.Variable(tf.random_uniform([len(self.vocab), self.config.embed_size], -1, 1), name="L")
+      embeds = tf.nn.embedding_lookup(self.L, self.input_placeholder)
+      inputs = tf.unpack(embeds, axis=1)
       ### END YOUR CODE
       return inputs
 
@@ -128,13 +132,15 @@ class RNNLM_Model(LanguageModel):
 
     Args:
       rnn_outputs: List of length num_steps, each of whose elements should be
-                   a tensor of shape (batch_size, embed_size).
+                   a tensor of shape (batch_size, hidden_size).
     Returns:
       outputs: List of length num_steps, each a tensor of shape
                (batch_size, len(vocab)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    U = tf.Variable(tf.random_uniform([self.config.hidden_size, len(self.vocab)], -1, 1), name="U")
+    b2 = tf.Variable(tf.zeros([len(self.vocab)]), name="b2")
+    outputs = [tf.matmul(rnn_output, U) + b2 for rnn_output in rnn_outputs]
     ### END YOUR CODE
     return outputs
 
@@ -151,7 +157,12 @@ class RNNLM_Model(LanguageModel):
       loss: A 0-d tensor (scalar)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    # loss = sequence_loss(output, self.labels_placeholder, 1)
+    all_ones = [tf.ones([self.config.batch_size * self.config.num_steps])]
+    cross_entropy = sequence_loss(
+        [output], [tf.reshape(self.labels_placeholder, [-1])], all_ones, len(self.vocab))
+    tf.add_to_collection('total_loss', cross_entropy)
+    loss = tf.add_n(tf.get_collection('total_loss'))
     ### END YOUR CODE
     return loss
 
@@ -177,7 +188,7 @@ class RNNLM_Model(LanguageModel):
       train_op: The Op for training.
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    train_op = tf.train.AdamOptimizer(learning_rate=self.config.lr).minimize(loss)
     ### END YOUR CODE
     return train_op
   
@@ -246,7 +257,23 @@ class RNNLM_Model(LanguageModel):
                a tensor of shape (batch_size, hidden_size)
     """
     ### YOUR CODE HERE
-    raise NotImplementedError
+    self.initial_state = tf.zeros([self.config.batch_size, self.config.hidden_size])
+    
+    with tf.variable_scope("RNNffebraze") as scope:
+      H  = tf.get_variable("H",  initializer=tf.random_uniform([self.config.hidden_size, self.config.hidden_size], -1, 1))
+      I  = tf.get_variable("I",  initializer=tf.random_uniform([self.config.embed_size, self.config.hidden_size], -1, 1))
+      b1 = tf.get_variable("b1", initializer=tf.zeros([self.config.hidden_size]))
+      
+      hidden = tf.nn.sigmoid(tf.matmul(self.initial_state, H) + tf.matmul(inputs[0], I) + b1)
+      rnn_outputs = [hidden]
+      
+      for input in inputs[1:]:
+        scope.reuse_variables()
+        hidden = tf.nn.sigmoid(tf.matmul(hidden, H) + tf.matmul(input, I) + b1)
+        rnn_outputs.append(hidden)
+      
+      self.final_state = rnn_outputs[-1]
+    
     ### END YOUR CODE
     return rnn_outputs
 
@@ -351,7 +378,7 @@ def test_RNNLM():
     scope.reuse_variables()
     gen_model = RNNLM_Model(gen_config)
 
-  init = tf.initialize_all_variables()
+  init = tf.global_variables_initializer()
   saver = tf.train.Saver()
 
   with tf.Session() as session:
