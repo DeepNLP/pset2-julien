@@ -168,6 +168,10 @@ class RNNLM_Model(LanguageModel):
     ### END YOUR CODE
     return train_op
   
+  
+  
+  
+  
   def __init__(self, config):
     self.config = config
     self.load_data(debug=False)
@@ -185,6 +189,9 @@ class RNNLM_Model(LanguageModel):
     output = tf.reshape(tf.concat(1, self.outputs), [-1, len(self.vocab)])
     self.calculate_loss = self.add_loss_op(output)
     self.train_step = self.add_training_op(self.calculate_loss)
+
+
+
 
 
   def add_model(self, inputs):
@@ -231,6 +238,10 @@ class RNNLM_Model(LanguageModel):
     return rnn_outputs
 
 
+
+
+
+
   def run_epoch(self, session, data, train_op=None, verbose=10):
     config = self.config
     dp = config.dropout
@@ -258,6 +269,15 @@ class RNNLM_Model(LanguageModel):
     if verbose:
       sys.stdout.write('\r')
     return np.exp(np.mean(total_loss))
+
+
+
+
+
+
+
+
+
 
 def generate_text(session, model, config, starting_text='<eos>',
                   stop_length=100, stop_tokens=None, temp=1.0):
