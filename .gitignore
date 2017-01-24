@@ -1,3 +1,4 @@
 .ipynb_checkpoints
 weights/
+weights-rnnlm/
 q2_test.predicted

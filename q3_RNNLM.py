@@ -397,12 +397,12 @@ def test_RNNLM():
       if valid_pp < best_val_pp:
         best_val_pp = valid_pp
         best_val_epoch = epoch
-        saver.save(session, './ptb_rnnlm.weights')
+        saver.save(session, './weights-rnnlm/ptb_rnnlm.weights')
       if epoch - best_val_epoch > config.early_stopping:
         break
       print 'Total time: {}'.format(time.time() - start)
       
-    # saver.restore(session, 'ptb_rnnlm.weights')
+    # saver.restore(session, './weights-rnnlm/ptb_rnnlm.weights')
     # test_pp = model.run_epoch(session, model.encoded_test)
     # print '=-=' * 5
     # print 'Test perplexity: {}'.format(test_pp)
