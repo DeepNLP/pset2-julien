@@ -257,6 +257,8 @@ class RNNLM_Model(LanguageModel):
                a tensor of shape (batch_size, hidden_size)
     """
     ### YOUR CODE HERE
+    inputs = [tf.nn.dropout(o, self.dropout_placeholder) for o in inputs]
+    
     self.initial_state = tf.zeros([self.config.batch_size, self.config.hidden_size])
     
     with tf.variable_scope("RNNffebraze") as scope:
@@ -273,6 +275,8 @@ class RNNLM_Model(LanguageModel):
         rnn_outputs.append(hidden)
       
       self.final_state = rnn_outputs[-1]
+      
+      rnn_outputs = [tf.nn.dropout(o, self.dropout_placeholder) for o in rnn_outputs]
     
     ### END YOUR CODE
     return rnn_outputs
